@@ -1,4 +1,4 @@
-var mongobd = require("mongodb");
+var mongodb = require("mongodb");
 
 async function getDB() {
   // now, we have the data, to send this data to database, we need to connect with database server.
