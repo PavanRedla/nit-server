@@ -201,24 +201,26 @@ var router = express.Router();
 // we can connect to the datbase by using node js app by creating an end point.
 
 var mongodb = require("mongodb");
+var getDB = require("../common/dbConn");
 router.post("/register", async function (req, res, next) {
   try {
     // take the data from the request
     const data = req.body.data;
-    // now, we have the data, to send this data to database, we need to connect with database server.
-    // to work with mongodb in node js we have one library called mongodb. so install it - npm install mongodb and import it.
+    // // now, we have the data, to send this data to database, we need to connect with database server.
+    // // to work with mongodb in node js we have one library called mongodb. so install it - npm install mongodb and import it.
 
-    // only client can connect with server. To connect with mongoDB server, we need mongodb client.
-    // we have one property called mongoClient in mongodb library which is used to connect with mongodb server.
-    const MongoClient = mongodb.MongoClient;
+    // // only client can connect with server. To connect with mongoDB server, we need mongodb client.
+    // // we have one property called MongoClient in mongodb library which is used to connect with mongodb server.
+    // const MongoClient = mongodb.MongoClient;
 
-    const server = await MongoClient.connect(
-      "mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/"
-    ); // connecting with mongobd server
+    // const server = await MongoClient.connect(
+    //   "mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/"
+    // ); // connecting with mongobd server
 
-    // server contains databases
-    const db = server.db("sms"); // sms database - school management software database
-    // database contains collection
+    // // server contains databases
+    // const db = server.db("sms"); // sms database - school management software database
+    // // database contains collection
+    const db = await getDB();
     const collection = db.collection("students"); // collection is students
     // collection contains documents
     const result = await collection.insertOne(data);
@@ -227,4 +229,21 @@ router.post("/register", async function (req, res, next) {
     res.send(ex.message);
   }
 });
+
+// creating end point to get the data from database
+
+router.get("/get-std", async function (req, res, next) {
+  try {
+    // const MongoClient = mongodb.MongoClient;
+    // const server = await MongoClient.connect("mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/")
+    // const db = server.db("sms")
+    const db = await getDB(); // getDB is an async function so we need to use await keyword
+    const collection = db.collection("students");
+    const result = await collection.find().toArray();
+    res.send(result);
+  } catch (ex) {
+    console.log(ex.message);
+  }
+});
+
 module.exports = router; // exporting the route using export syntax given before ES6
