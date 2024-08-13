@@ -241,6 +241,7 @@ router.get("/get-std", async function (req, res, next) {
     const collection = db.collection("students");
     const result = await collection.find().toArray();
     res.send(result);
+    console.log(result);
   } catch (ex) {
     console.log(ex.message);
   }
