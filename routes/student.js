@@ -247,4 +247,54 @@ router.get("/get-std", async function (req, res, next) {
   }
 });
 
+// endpoint to update the document in the mongoDB
+var objectId = mongodb.ObjectId;
+router.put("/update-std", async function (req, res, next) {
+  try {
+    // get the document id you want to update as a part of url
+    const id = req.query.id;
+    // get the data which you want to update from the url. get the data in the form of request body
+    const data = req.body.data;
+    // get the database
+    const db = await getDB();
+    // database containes collectins
+    const collection = db.collection("students");
+    const result = await collection.updateOne(
+      { _id: objectId.createFromHexString(id) },
+      { $set: data }
+    );
+    res.send(result);
+  } catch (ex) {
+    console.error(ex);
+    res.send(ex);
+  }
+});
+
+// creating delete end point
+
+router.delete("/delete-std/:id", async function (req, res, next) {
+  try {
+    const id = req.params.id;
+    const db = await getDB();
+    const collection = db.collection("students");
+    const result = await collection.deleteOne({
+      _id: objectId.createFromHexString(id),
+    });
+    res.send(result);
+  } catch (ex) {
+    res.send(ex);
+  }
+});
+
+// create end point for login page
+
+router.post("/login", function (req, res, next) {
+  const { uid, pwd } = req.body;
+  if (uid == "nit" && pwd == "nitnit") {
+    res.send([{ uid, pwd }]);
+  } else {
+    res.send([]);
+  }
+});
+
 module.exports = router; // exporting the route using export syntax given before ES6
