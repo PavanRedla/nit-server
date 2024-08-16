@@ -202,54 +202,65 @@ var router = express.Router();
 
 var mongodb = require("mongodb");
 var getDB = require("../common/dbConn");
-router.post("/register", async function (req, res, next) {
-  try {
-    // take the data from the request
-    const data = req.body.data;
-    // // now, we have the data, to send this data to database, we need to connect with database server.
-    // // to work with mongodb in node js we have one library called mongodb. so install it - npm install mongodb and import it.
+var validateToken = require("../common/validateToken");
+router.post(
+  "/register",
+  validateToken,
 
-    // // only client can connect with server. To connect with mongoDB server, we need mongodb client.
-    // // we have one property called MongoClient in mongodb library which is used to connect with mongodb server.
-    // const MongoClient = mongodb.MongoClient;
+  async function (req, res, next) {
+    try {
+      // take the data from the request
+      const data = req.body.data;
+      // // now, we have the data, to send this data to database, we need to connect with database server.
+      // // to work with mongodb in node js we have one library called mongodb. so install it - npm install mongodb and import it.
 
-    // const server = await MongoClient.connect(
-    //   "mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/"
-    // ); // connecting with mongobd server
+      // // only client can connect with server. To connect with mongoDB server, we need mongodb client.
+      // // we have one property called MongoClient in mongodb library which is used to connect with mongodb server.
+      // const MongoClient = mongodb.MongoClient;
 
-    // // server contains databases
-    // const db = server.db("sms"); // sms database - school management software database
-    // // database contains collection
-    const db = await getDB();
-    const collection = db.collection("students"); // collection is students
-    // collection contains documents
-    const result = await collection.insertOne(data);
-    res.send(result);
-  } catch (ex) {
-    res.send(ex.message);
+      // const server = await MongoClient.connect(
+      //   "mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/"
+      // ); // connecting with mongobd server
+
+      // // server contains databases
+      // const db = server.db("sms"); // sms database - school management software database
+      // // database contains collection
+      const db = await getDB();
+      const collection = db.collection("students"); // collection is students
+      // collection contains documents
+      const result = await collection.insertOne(data);
+      res.send(result);
+    } catch (ex) {
+      res.send(ex.message);
+    }
   }
-});
+);
 
 // creating end point to get the data from database
 
-router.get("/get-std", async function (req, res, next) {
-  try {
-    // const MongoClient = mongodb.MongoClient;
-    // const server = await MongoClient.connect("mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/")
-    // const db = server.db("sms")
-    const db = await getDB(); // getDB is an async function so we need to use await keyword
-    const collection = db.collection("students");
-    const result = await collection.find().toArray();
-    res.send(result);
-    console.log(result);
-  } catch (ex) {
-    console.log(ex.message);
+router.get(
+  "/get-std",
+  validateToken,
+
+  async function (req, res, next) {
+    try {
+      // const MongoClient = mongodb.MongoClient;
+      // const server = await MongoClient.connect("mongodb+srv://nit:nit@react.8gwfjoa.mongodb.net/")
+      // const db = server.db("sms")
+      const db = await getDB(); // getDB is an async function so we need to use await keyword
+      const collection = db.collection("students");
+      const result = await collection.find().toArray();
+      res.send(result);
+      console.log(result);
+    } catch (ex) {
+      console.log(ex.message);
+    }
   }
-});
+);
 
 // endpoint to update the document in the mongoDB
 var objectId = mongodb.ObjectId;
-router.put("/update-std", async function (req, res, next) {
+router.put("/update-std", validateToken, async function (req, res, next) {
   try {
     // get the document id you want to update as a part of url
     const id = req.query.id;
@@ -272,26 +283,32 @@ router.put("/update-std", async function (req, res, next) {
 
 // creating delete end point
 
-router.delete("/delete-std/:id", async function (req, res, next) {
-  try {
-    const id = req.params.id;
-    const db = await getDB();
-    const collection = db.collection("students");
-    const result = await collection.deleteOne({
-      _id: objectId.createFromHexString(id),
-    });
-    res.send(result);
-  } catch (ex) {
-    res.send(ex);
+router.delete(
+  "/delete-std/:id",
+  validateToken,
+  async function (req, res, next) {
+    try {
+      const id = req.params.id;
+      const db = await getDB();
+      const collection = db.collection("students");
+      const result = await collection.deleteOne({
+        _id: objectId.createFromHexString(id),
+      });
+      res.send(result);
+    } catch (ex) {
+      res.send(ex);
+    }
   }
-});
+);
 
 // create end point for login page
 
+var jwt = require("jsonwebtoken");
 router.post("/login", function (req, res, next) {
   const { uid, pwd } = req.body;
   if (uid == "nit" && pwd == "nitnit") {
-    res.send([{ uid, pwd }]);
+    const token = jwt.sign({ uid, pwd }, "appToken");
+    res.send([{ uid, pwd, token }]);
   } else {
     res.send([]);
   }
